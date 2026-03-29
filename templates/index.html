@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SocialMath</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#07091A; --card:#0E1428; --card2:#131A36;
+  --blue:#00D4FF; --coral:#FF6B6B; --mint:#4ECDC4; --gold:#FFD166; --purple:#C77DFF;
+  --fg:#F0F4FF; --dim:#6B7A99; --border:rgba(255,255,255,.07);
+  --r:18px; --r2:12px;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Nunito',sans-serif;background:var(--ink);color:var(--fg);min-height:100vh;overflow-x:hidden}
+
+/* ── STARFIELD ─────────────────── */
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(1px 1px at  7% 12%,rgba(255,255,255,.55) 0%,transparent 100%),
+    radial-gradient(1px 1px at 23% 77%,rgba(255,255,255,.32) 0%,transparent 100%),
+    radial-gradient(1.5px 1.5px at 57% 8%,rgba(255,255,255,.62) 0%,transparent 100%),
+    radial-gradient(1px 1px at 78% 46%,rgba(255,255,255,.43) 0%,transparent 100%),
+    radial-gradient(2px 2px at 90% 27%,rgba(0,212,255,.38) 0%,transparent 100%),
+    radial-gradient(1px 1px at 46% 91%,rgba(255,255,255,.38) 0%,transparent 100%),
+    radial-gradient(1.5px 1.5px at 33% 53%,rgba(78,205,196,.22) 0%,transparent 100%),
+    radial-gradient(1px 1px at 65% 33%,rgba(199,125,255,.28) 0%,transparent 100%),
+    radial-gradient(1px 1px at 15% 65%,rgba(255,255,255,.28) 0%,transparent 100%),
+    radial-gradient(1px 1px at 85% 78%,rgba(255,255,255,.22) 0%,transparent 100%)
+}
+
+/* ── HEADER ──────────────────────── */
+.hdr{position:sticky;top:0;z-index:100;
+  background:rgba(7,9,26,.94);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:14px;padding:12px 20px}
+.logo{font-family:'Fredoka';font-size:1.65rem;font-weight:700;white-space:nowrap;
+  background:linear-gradient(135deg,var(--blue),var(--mint));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.logo b{background:linear-gradient(135deg,var(--coral),var(--gold));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent}
+
+/* icon-only tabs */
+.tabs{display:flex;gap:6px;flex:1;justify-content:center}
+.tab{width:44px;height:44px;border-radius:50%;border:1.5px solid var(--border);
+  background:transparent;cursor:pointer;font-size:1.25rem;
+  display:flex;align-items:center;justify-content:center;transition:all .25s;
+  position:relative}
+.tab:hover{border-color:var(--blue);box-shadow:0 0 14px rgba(0,212,255,.25)}
+.tab.on{background:linear-gradient(135deg,var(--blue),var(--mint));border-color:transparent;
+  box-shadow:0 0 18px rgba(0,212,255,.35)}
+.tab[title]:hover::after{
+  content:attr(title);position:absolute;top:calc(100% + 8px);left:50%;transform:translateX(-50%);
+  background:var(--card2);border:1px solid var(--border);color:var(--fg);
+  padding:4px 10px;border-radius:8px;font-size:.72rem;font-weight:700;white-space:nowrap;z-index:10}
+
+/* header stat pills */
+.hdr-stats{display:flex;gap:10px}
+.hpill{background:var(--card2);border:1px solid var(--border);border-radius:50px;
+  padding:5px 12px;display:flex;align-items:center;gap:5px;font-size:.85rem}
+.hpill-num{font-family:'Fredoka';color:var(--gold);font-size:1.1rem;line-height:1}
+
+/* ── MAIN ────────────────────────── */
+.main{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:24px 16px}
+.panel{display:none}.panel.on{display:block;animation:panelIn .3s ease}
+@keyframes panelIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);
+  padding:22px;position:relative;overflow:hidden}
+
+/* ── SIMULATOR TOOLBAR ───────────── */
+.sim-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px}
+.diff-row{display:flex;gap:5px}
+.diff{width:38px;height:38px;border-radius:50%;border:1.5px solid var(--border);
+  background:transparent;font-size:1.1rem;cursor:pointer;transition:all .2s;
+  display:flex;align-items:center;justify-content:center}
+.diff.on{background:var(--card2);border-color:var(--mint);box-shadow:0 0 10px rgba(78,205,196,.3)}
+.new-btn{background:linear-gradient(135deg,var(--coral),#FF8E53);border:none;
+  color:white;width:52px;height:52px;border-radius:50%;font-size:1.5rem;
+  cursor:pointer;transition:all .3s;box-shadow:0 4px 20px rgba(255,107,107,.35)}
+.new-btn:hover{transform:scale(1.1) rotate(90deg);box-shadow:0 6px 28px rgba(255,107,107,.5)}
+
+/* ── SCENE CARD ──────────────────── */
+.scene-wrap{border-radius:var(--r);overflow:hidden;margin-bottom:20px;position:relative;min-height:290px}
+.scene-bg{position:absolute;inset:0}
+
+/* Classroom */
+.scene-bg.classroom{background:linear-gradient(180deg,#B8D4EB 0%,#90C0E0 44%,#6B8E4E 44%,#527A38 100%)}
+.scene-bg.classroom::before{content:'🏫';position:absolute;top:12px;left:50%;transform:translateX(-50%);font-size:2.2rem}
+.scene-bg.classroom::after{content:'📋';position:absolute;top:14px;right:18%;font-size:2rem}
+
+/* Playground */
+.scene-bg.playground{background:linear-gradient(180deg,#6BB8F0 0%,#98CCF5 48%,#81C784 48%,#5EA35E 100%)}
+.scene-bg.playground::before{content:'☀️';position:absolute;top:10px;right:12%;font-size:1.8rem}
+.scene-bg.playground::after{content:'🛝';position:absolute;bottom:45%;right:8%;font-size:2.4rem}
+
+/* Home */
+.scene-bg.home{background:linear-gradient(180deg,#F0DFC8 0%,#EDD5B5 48%,#C49050 48%,#B07840 100%)}
+.scene-bg.home::before{content:'🪟';position:absolute;top:10px;left:14%;font-size:2.2rem}
+.scene-bg.home::after{content:'🛋️';position:absolute;bottom:43%;left:8%;font-size:2rem}
+
+/* Lunchroom */
+.scene-bg.lunchroom{background:linear-gradient(180deg,#FFF9E0 0%,#FFF3C4 48%,#EBEBD0 48%,#D8D8B8 100%)}
+.scene-bg.lunchroom::before{content:'🍽️';position:absolute;top:12px;right:20%;font-size:2.2rem}
+.scene-bg.lunchroom::after{content:'🥛';position:absolute;top:14px;left:16%;font-size:1.8rem}
+
+/* Hallway */
+.scene-bg.hallway{background:linear-gradient(180deg,#E8EDF2 0%,#CDD5DE 48%,#A8B4BE 48%,#8A98A4 100%)}
+.scene-bg.hallway::before{content:'🚪';position:absolute;top:10px;right:16%;font-size:2.6rem}
+.scene-bg.hallway::after{content:'🔦';position:absolute;top:12px;left:14%;font-size:1.6rem}
+
+.scene-body{position:relative;z-index:2;display:flex;flex-direction:column;
+  align-items:center;justify-content:flex-end;min-height:290px;padding:0 20px 56px}
+
+/* Scan line animation */
+.scan-line{position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,transparent,var(--blue),transparent);
+  animation:scan 1.2s ease forwards;opacity:0}
+@keyframes scan{0%{top:0;opacity:0}10%{opacity:1}90%{top:100%;opacity:1}100%{top:100%;opacity:0}}
+
+/* Character */
+.char-wrap{position:relative;margin-bottom:4px}
+.char-svg{width:108px;height:148px;filter:drop-shadow(0 6px 18px rgba(0,0,0,.4))}
+
+/* Signal bubbles */
+.sig-bubbles{position:absolute;inset:0;pointer-events:none}
+.sig-bub{position:absolute;font-size:1.9rem;
+  animation:bubIn .5s cubic-bezier(.34,1.56,.64,1) forwards,
+             bobble 2.5s ease-in-out infinite 0.5s;
+  opacity:0;cursor:default}
+.sig-bub[title]:hover::after{
+  content:attr(title);position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);
+  background:rgba(0,0,0,.85);color:white;padding:3px 9px;border-radius:8px;
+  font-size:.7rem;font-weight:700;white-space:nowrap;font-family:'Nunito'}
+@keyframes bubIn{from{transform:scale(0) rotate(-20deg);opacity:0}to{transform:scale(1) rotate(0);opacity:1}}
+@keyframes bobble{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+
+/* Scene info bar */
+.scene-bar{position:relative;z-index:2;display:flex;justify-content:space-between;align-items:center;
+  padding:10px 18px;background:rgba(0,0,0,.78);backdrop-filter:blur(10px)}
+.scene-loc{font-size:1.4rem}
+.scene-char{font-size:1.3rem}
+.scene-count{display:flex;gap:4px;align-items:center}
+.sig-dot{width:8px;height:8px;border-radius:50%;background:var(--blue)}
+
+/* ── EMOTION PHASE ───────────────── */
+.phase-prompt{display:flex;justify-content:center;align-items:center;gap:10px;margin:22px 0 16px}
+.prompt-icon{font-size:2.4rem;animation:promptPulse 1.6s ease-in-out infinite}
+@keyframes promptPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
+.prompt-arrow{font-size:1.6rem;color:var(--blue);animation:arrowBlink .8s ease-in-out infinite}
+@keyframes arrowBlink{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* Emotion face grid */
+.emo-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
+.emo-card{background:var(--card2);border:2.5px solid var(--border);border-radius:var(--r);
+  padding:16px 10px 12px;text-align:center;cursor:pointer;transition:all .28s;
+  display:flex;flex-direction:column;align-items:center}
+.emo-card:hover{transform:translateY(-5px) scale(1.04);border-color:var(--blue);
+  box-shadow:0 0 22px rgba(0,212,255,.3)}
+.emo-face{font-size:3.2rem;line-height:1;transition:transform .3s;display:block;margin-bottom:4px}
+.emo-card:hover .emo-face{transform:scale(1.2)}
+/* Label hidden initially, shown after selection */
+.emo-lbl{font-size:.78rem;font-weight:800;color:transparent;transition:color .4s;
+  text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.emo-card.revealed .emo-lbl{color:var(--fg)}
+.emo-bar-wrap{width:100%;height:5px;background:var(--border);border-radius:3px;overflow:hidden;display:none}
+.emo-bar-fill{height:100%;background:linear-gradient(90deg,var(--mint),var(--blue));
+  border-radius:3px;transition:width 1.1s cubic-bezier(.22,1,.36,1)}
+.emo-pct{font-family:'Fredoka';font-size:1rem;color:var(--gold);margin-top:3px;display:none}
+.emo-card.selected{border-color:var(--coral);background:rgba(255,107,107,.1)}
+.emo-card.correct{border-color:var(--mint);background:rgba(78,205,196,.1)}
+
+/* ── RESPONSE PHASE ──────────────── */
+.res-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:20px}
+.res-card{background:var(--card2);border:2.5px solid var(--border);border-radius:var(--r);
+  padding:14px;cursor:pointer;transition:all .28s;display:flex;flex-direction:column;align-items:center;gap:8px}
+.res-card:hover{transform:translateY(-4px);border-color:var(--purple);
+  box-shadow:0 0 20px rgba(199,125,255,.25)}
+.res-card.selected{border-color:var(--coral);background:rgba(255,107,107,.07)}
+.res-card.best{border-color:var(--gold);background:rgba(255,209,102,.07)}
+.res-scene{width:100%;height:80px;border-radius:10px;overflow:hidden}
+/* Text hidden initially */
+.res-lbl{font-size:.82rem;font-weight:700;color:transparent;transition:color .4s;text-align:center}
+.res-card.revealed .res-lbl{color:var(--fg)}
+.res-bar-wrap{width:100%;height:6px;background:var(--border);border-radius:3px;overflow:hidden;display:none}
+.res-bar-fill{height:100%;background:linear-gradient(90deg,var(--coral),var(--gold));
+  border-radius:3px;transition:width 1.1s cubic-bezier(.22,1,.36,1)}
+.res-pct{font-family:'Fredoka';font-size:.95rem;color:var(--gold);display:none}
+
+/* ── RESULT PANEL ────────────────── */
+.result{display:none;background:var(--card2);border:1px solid var(--border);
+  border-radius:var(--r);padding:28px 22px;text-align:center}
+.result.on{display:block;animation:slideUp .5s ease}
+@keyframes slideUp{from{transform:translateY(24px);opacity:0}to{transform:translateY(0);opacity:1}}
+
+/* SVG ring scores */
+.ring-row{display:flex;justify-content:center;align-items:center;gap:22px;margin:20px 0}
+.ring-wrap{display:flex;flex-direction:column;align-items:center;gap:6px}
+.ring-svg{transform:rotate(-90deg)}
+.ring-bg{fill:none;stroke:var(--border);stroke-width:6}
+.ring-fill{fill:none;stroke-width:6;stroke-linecap:round;
+  stroke-dasharray:251;stroke-dashoffset:251;transition:stroke-dashoffset 1.4s cubic-bezier(.22,1,.36,1)}
+.ring-label{font-size:.65rem;color:var(--dim);text-transform:uppercase;letter-spacing:.5px;font-weight:700}
+.ring-num{font-family:'Fredoka';font-size:1.6rem;position:absolute;
+  top:50%;left:50%;transform:translate(-50%,-50%);line-height:1}
+.ring-container{position:relative;width:80px;height:80px}
+
+/* Pattern flow visual */
+.pattern-flow{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;
+  gap:6px;margin:14px 0;padding:12px 16px;
+  background:rgba(0,212,255,.05);border:1px solid rgba(0,212,255,.15);border-radius:var(--r2)}
+.pf-sig{font-size:1.5rem;background:var(--card);border-radius:8px;padding:4px 8px}
+.pf-plus{color:var(--dim);font-size:1rem;font-weight:800}
+.pf-arrow{color:var(--blue);font-size:1.4rem;margin:0 4px}
+.pf-result{font-size:1.8rem}
+
+.achieve{display:inline-flex;align-items:center;gap:8px;
+  background:linear-gradient(135deg,var(--gold),#FF8C00);
+  color:var(--ink);padding:8px 20px;border-radius:50px;font-weight:800;font-size:.9rem;
+  animation:achievePop .6s cubic-bezier(.34,1.56,.64,1)}
+@keyframes achievePop{from{transform:scale(0) rotate(-15deg);opacity:0}to{transform:scale(1) rotate(0);opacity:1}}
+
+.explain{background:rgba(0,0,0,.3);border-left:3px solid var(--mint);border-radius:var(--r2);
+  padding:12px 16px;text-align:left;font-size:.88rem;line-height:1.6;color:var(--dim);margin:14px 0}
+
+.next-btn{background:linear-gradient(135deg,var(--mint),var(--blue));border:none;
+  color:var(--ink);font-family:'Nunito';font-weight:800;font-size:1.1rem;
+  padding:14px 38px;border-radius:50px;cursor:pointer;margin-top:14px;
+  transition:all .3s}
+.next-btn:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(0,212,255,.4)}
+
+/* ── LOADING ─────────────────────── */
+.loading{position:absolute;inset:0;background:rgba(7,9,26,.85);
+  backdrop-filter:blur(12px);display:flex;flex-direction:column;
+  align-items:center;justify-content:center;border-radius:var(--r);z-index:30}
+.spin{width:52px;height:52px;border:3px solid var(--border);border-top-color:var(--blue);
+  border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-msg{margin-top:14px;color:var(--blue);font-weight:800;font-size:.9rem}
+
+/* ── DECODER ─────────────────────── */
+.dec-layout{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+
+/* Emoji-only signal grid */
+.sig-grid{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.sig-chip{width:46px;height:46px;border-radius:12px;border:2px solid var(--border);
+  background:var(--card2);font-size:1.4rem;cursor:pointer;transition:all .2s;
+  display:flex;align-items:center;justify-content:center;position:relative}
+.sig-chip:hover{border-color:var(--mint);transform:scale(1.12);
+  box-shadow:0 0 12px rgba(78,205,196,.3)}
+.sig-chip.on{border-color:var(--mint);background:rgba(78,205,196,.15);
+  box-shadow:0 0 14px rgba(78,205,196,.35)}
+.sig-chip[title]:hover::after{
+  content:attr(title);position:absolute;bottom:calc(100%+6px);left:50%;transform:translateX(-50%);
+  background:rgba(0,0,0,.9);color:white;padding:3px 9px;border-radius:8px;
+  font-size:.7rem;font-weight:700;white-space:nowrap;z-index:10}
+
+/* Context emoji buttons */
+.ctx-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.ctx-btn{width:52px;height:52px;border-radius:14px;border:2px solid var(--border);
+  background:var(--card2);font-size:1.6rem;cursor:pointer;transition:all .2s;
+  display:flex;align-items:center;justify-content:center;position:relative}
+.ctx-btn:hover,.ctx-btn.on{border-color:var(--purple);background:rgba(199,125,255,.12);
+  box-shadow:0 0 12px rgba(199,125,255,.3)}
+.ctx-btn[title]:hover::after{
+  content:attr(title);position:absolute;bottom:calc(100%+6px);left:50%;transform:translateX(-50%);
+  background:rgba(0,0,0,.9);color:white;padding:3px 9px;border-radius:8px;
+  font-size:.7rem;font-weight:700;white-space:nowrap;z-index:10}
+
+.decode-btn{width:100%;padding:13px;border-radius:50px;border:none;
+  background:linear-gradient(135deg,var(--purple),#9B59B6);color:white;
+  font-family:'Nunito';font-weight:800;font-size:1rem;cursor:pointer;
+  transition:all .3s;margin-top:4px}
+.decode-btn:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(199,125,255,.4)}
+
+.dec-sec{font-family:'Fredoka';font-size:1rem;color:var(--blue);margin-bottom:10px}
+
+/* Prob bars */
+.prob-item{display:flex;align-items:center;gap:10px;margin-bottom:11px}
+.prob-face{font-size:1.8rem;width:36px;text-align:center;flex-shrink:0}
+.prob-track{flex:1;height:12px;background:var(--border);border-radius:6px;overflow:hidden}
+.prob-fill{height:100%;border-radius:6px;background:linear-gradient(90deg,var(--blue),var(--mint));
+  transition:width 1s ease}
+.prob-pct{font-family:'Fredoka';font-size:1.05rem;color:var(--gold);width:40px;text-align:right}
+
+/* Action items */
+.act-item{display:flex;align-items:center;gap:10px;padding:9px;
+  background:var(--card2);border-radius:11px;margin-bottom:7px}
+
+/* ── LIBRARY ─────────────────────── */
+.lib-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:13px}
+.pat{background:var(--card);border:1px solid var(--border);border-radius:var(--r);
+  padding:16px;transition:all .28s;position:relative;overflow:hidden}
+.pat::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,var(--blue),var(--mint))}
+.pat:hover{transform:translateY(-4px);border-color:var(--blue);box-shadow:0 0 18px rgba(0,212,255,.18)}
+.pat-head{display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:1.2rem}
+.pat-sigs{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px}
+.pat-sig{font-size:1.1rem;background:var(--card2);border-radius:8px;padding:4px 7px}
+.pat-foot{display:flex;align-items:center;justify-content:space-between}
+.pat-acc{font-family:'Fredoka';font-size:1.3rem}
+
+/* ── DASHBOARD ───────────────────── */
+.dash-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.dcard{background:var(--card);border:1px solid var(--border);border-radius:var(--r);
+  padding:22px;text-align:center}
+.big{font-family:'Fredoka';font-size:3.8rem;font-weight:700;line-height:1;margin:8px 0}
+.dlbl{font-size:.8rem;color:var(--dim);font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.dsub{font-size:.75rem;color:var(--dim);margin-top:3px}
+.wide{grid-column:span 2}
+.emo-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.ero-face{font-size:1.4rem;width:32px}
+.ero-bar{flex:1;height:12px;background:var(--border);border-radius:6px;overflow:hidden}
+.ero-fill{height:100%;border-radius:6px;background:linear-gradient(90deg,var(--blue),var(--mint))}
+.ero-pct{font-family:'Fredoka';font-size:.95rem;color:var(--gold);width:40px;text-align:right}
+
+/* ── EMPTY ───────────────────────── */
+.empty{text-align:center;padding:52px 20px;color:var(--dim)}
+.empty-icon{font-size:3.5rem;margin-bottom:13px}
+
+/* ── CONFETTI ────────────────────── */
+@keyframes confFall{0%{transform:translateY(-10px) rotate(0);opacity:1}100%{transform:translateY(90px) rotate(720deg);opacity:0}}
+.conf{position:absolute;width:9px;height:9px;border-radius:2px;animation:confFall 1.1s ease forwards}
+
+/* RESPONSIVE */
+@media(max-width:620px){
+  .emo-grid{grid-template-columns:repeat(2,1fr)}
+  .res-grid{grid-template-columns:1fr}
+  .dec-layout{grid-template-columns:1fr}
+  .dash-grid{grid-template-columns:1fr}
+  .wide{grid-column:span 1}
+  .hdr-stats{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- ── HEADER ─────────────────────────── -->
+<header class="hdr">
+  <div class="logo">Social<b>Math</b></div>
+  <nav class="tabs">
+    <button class="tab on"  onclick="goTab('sim',this)"   title="Practice">🎮</button>
+    <button class="tab"     onclick="goTab('dec',this)"   title="Decode">🔍</button>
+    <button class="tab"     onclick="goTab('lib',this)"   title="Library">📚</button>
+    <button class="tab"     onclick="goTab('dash',this)"  title="Stats">📊</button>
+  </nav>
+  <div class="hdr-stats">
+    <div class="hpill"><span>🎯</span><span class="hpill-num" id="h-acc">--%</span></div>
+    <div class="hpill"><span>🔖</span><span class="hpill-num" id="h-pat">0</span></div>
+    <div class="hpill"><span>🔥</span><span class="hpill-num" id="h-str">0</span></div>
+  </div>
+</header>
+
+<main class="main">
+
+<!-- ════════ SIMULATOR ════════════════ -->
+<div id="panel-sim" class="panel on">
+<div class="card">
+  <div id="sim-load" class="loading" style="display:none">
+    <div class="spin"></div><div class="loading-msg">🧠 Scanning scenario…</div>
+  </div>
+
+  <div class="sim-bar">
+    <div class="diff-row">
+      <button class="diff"    onclick="setDiff('easy',this)"   title="Easy">🟢</button>
+      <button class="diff on" onclick="setDiff('medium',this)" title="Medium">🟡</button>
+      <button class="diff"    onclick="setDiff('hard',this)"   title="Hard">🔴</button>
+    </div>
+    <button class="new-btn" onclick="newScenario()" title="New Challenge">⚡</button>
+  </div>
+
+  <!-- Scene -->
+  <div id="scene-wrap" class="scene-wrap">
+    <div style="display:flex;align-items:center;justify-content:center;height:290px;flex-direction:column;gap:16px;color:var(--dim)">
+      <div style="font-size:5rem">🎮</div>
+      <div style="font-size:1rem;font-weight:700">Tap ⚡ to start</div>
+    </div>
+  </div>
+
+  <!-- Emotion phase -->
+  <div id="step-emo" style="display:none">
+    <div class="phase-prompt">
+      <span style="font-size:1.5rem">👀</span>
+      <span class="prompt-arrow">→</span>
+      <span class="prompt-icon">🔍</span>
+      <span class="prompt-arrow">→</span>
+      <span style="font-size:1.5rem">❓</span>
+    </div>
+    <div class="emo-grid" id="emo-grid"></div>
+  </div>
+
+  <!-- Response phase -->
+  <div id="step-res" style="display:none">
+    <div class="phase-prompt">
+      <span style="font-size:1.5rem">👤</span>
+      <span class="prompt-arrow">→</span>
+      <span class="prompt-icon" style="font-size:2rem">🤔</span>
+      <span class="prompt-arrow">→</span>
+      <span style="font-size:1.5rem">❓</span>
+    </div>
+    <div class="res-grid" id="res-grid"></div>
+  </div>
+
+  <!-- Result -->
+  <div id="result" class="result">
+    <div id="achieve-display" style="margin-bottom:16px"></div>
+    <div class="ring-row" id="ring-row"></div>
+    <div id="pf-display" class="pattern-flow"></div>
+    <div class="explain" id="explain-text"></div>
+    <button class="next-btn" onclick="newScenario()">→</button>
+  </div>
+</div>
+</div>
+
+<!-- ════════ DECODER ═════════════════ -->
+<div id="panel-dec" class="panel">
+<div class="card">
+  <div class="dec-layout">
+    <div>
+      <div class="dec-sec">📍</div>
+      <div class="ctx-row" id="ctx-row">
+        <button class="ctx-btn on" data-ctx="classroom"  title="Classroom"  onclick="setCtx(this)">🏫</button>
+        <button class="ctx-btn"    data-ctx="playground" title="Playground" onclick="setCtx(this)">🛝</button>
+        <button class="ctx-btn"    data-ctx="home"       title="Home"       onclick="setCtx(this)">🏠</button>
+        <button class="ctx-btn"    data-ctx="lunchroom"  title="Lunchroom"  onclick="setCtx(this)">🍽️</button>
+        <button class="ctx-btn"    data-ctx="hallway"    title="Hallway"    onclick="setCtx(this)">🚪</button>
+        <button class="ctx-btn"    data-ctx="other"      title="Other"      onclick="setCtx(this)">📍</button>
+      </div>
+
+      <div class="dec-sec">👁️</div>
+      <div class="sig-grid" id="sig-grid"></div>
+
+      <button class="decode-btn" onclick="runDecode()">🔮</button>
+    </div>
+
+    <div>
+      <div class="dec-sec">📊</div>
+      <div id="dec-empty" style="text-align:center;padding:38px;color:var(--dim)">
+        <div style="font-size:3rem">🔮</div>
+      </div>
+      <div id="dec-spin" style="display:none;text-align:center;padding:38px">
+        <div class="spin" style="margin:0 auto 14px"></div>
+        <div style="color:var(--blue);font-weight:800">Analysing…</div>
+      </div>
+      <div id="dec-out" style="display:none">
+        <div id="dec-probs"></div>
+        <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">
+          <div class="dec-sec">💡</div>
+          <div id="dec-acts"></div>
+        </div>
+        <button id="save-btn" onclick="saveDecToLib()" style="
+          margin-top:12px;width:100%;padding:9px;border:1.5px dashed var(--mint);
+          background:transparent;color:var(--mint);border-radius:50px;
+          font-family:'Nunito';font-weight:700;cursor:pointer;font-size:.82rem">
+          + 📚
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ════════ LIBRARY ═════════════════ -->
+<div id="panel-lib" class="panel">
+<div class="card">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:8px">
+    <div style="font-size:1.8rem">📚</div>
+    <div style="font-family:'Fredoka';font-size:1.1rem;color:var(--gold)">
+      <span id="lib-count">0</span> 🔖
+    </div>
+  </div>
+  <div id="lib-grid" class="lib-grid">
+    <div class="empty"><div class="empty-icon">📖</div></div>
+  </div>
+</div>
+</div>
+
+<!-- ════════ DASHBOARD ═══════════════ -->
+<div id="panel-dash" class="panel">
+<div class="card">
+  <div class="dash-grid">
+    <div class="dcard"><div class="dlbl">🎯 Accuracy</div><div class="big" style="color:var(--blue)" id="d-acc">--%</div></div>
+    <div class="dcard"><div class="dlbl">🔥 Streak</div><div class="big" style="color:var(--coral)" id="d-str">0</div></div>
+    <div class="dcard"><div class="dlbl">⭐ Mastered</div><div class="big" style="color:var(--mint)" id="d-mst">0</div><div class="dsub">≥90% accuracy</div></div>
+    <div class="dcard"><div class="dlbl">🎮 Completed</div><div class="big" style="color:var(--gold)" id="d-tot">0</div></div>
+    <div class="dcard wide">
+      <div class="dlbl" style="margin-bottom:16px">Emotion Breakdown</div>
+      <div id="emo-break"></div>
+    </div>
+  </div>
+</div>
+</div>
+
+</main>
+
+<script>
+/* ═══════════════════════════ STATE ════════════════════════════ */
+const S = {
+  sc:null, diff:'medium',
+  selEmo:null, selRes:null, phase:'idle',
+  decCtx:'classroom', decSigs:[], lastDec:null,
+  stats:{total:0,emoScore:0,resScore:0,streak:0,emoBreak:{}},
+  pats:[]
+};
+const save=()=>localStorage.setItem('sm3',JSON.stringify({stats:S.stats,pats:S.pats}));
+const load=()=>{const d=localStorage.getItem('sm3');if(d){const p=JSON.parse(d);S.stats=p.stats||S.stats;S.pats=p.pats||[]}};
+
+/* ═════════════════════ SIGNAL / EMOTION DATA ══════════════════ */
+const SIGS=[
+  {id:'looking_down',   em:'👇', lbl:'Looking down'},
+  {id:'crossed_arms',   em:'🤚', lbl:'Arms crossed'},
+  {id:'quiet',          em:'🤫', lbl:'Very quiet'},
+  {id:'loud_voice',     em:'📢', lbl:'Loud voice'},
+  {id:'fast_speech',    em:'⚡', lbl:'Talking fast'},
+  {id:'slow_speech',    em:'🐢', lbl:'Talking slow'},
+  {id:'no_eye_contact', em:'🙈', lbl:'No eye contact'},
+  {id:'eye_contact',    em:'👁️', lbl:'Eye contact'},
+  {id:'smiling',        em:'😄', lbl:'Smiling'},
+  {id:'frowning',       em:'😟', lbl:'Frowning'},
+  {id:'tense_posture',  em:'😤', lbl:'Tense body'},
+  {id:'relaxed_posture',em:'😌', lbl:'Relaxed'},
+  {id:'crying',         em:'😢', lbl:'Crying'},
+  {id:'laughing',       em:'😂', lbl:'Laughing'},
+  {id:'fidgeting',      em:'🤔', lbl:'Fidgeting'},
+  {id:'waving',         em:'👋', lbl:'Waving'},
+  {id:'turning_away',   em:'↩️', lbl:'Turning away'},
+  {id:'leaning_in',     em:'➡️', lbl:'Leaning in'},
+];
+const SIGMAP=Object.fromEntries(SIGS.map(s=>[s.id,s]));
+const EMOEM={sad:'😢',happy:'😄',angry:'😠',worried:'😟',excited:'🤩',confused:'😕',tired:'😴',scared:'😨',other:'😐'};
+const SCENES={classroom:'🏫',playground:'🛝',home:'🏠',lunchroom:'🍽️',hallway:'🚪'};
+const CHARS={classmate:'👦',friend:'👧',teacher:'👩‍🏫',sibling:'👶',parent:'🧑'};
+
+/* ═══════════════════ SVG SPRITE SCENES FOR RESPONSES ══════════ */
+// Mini illustrated SVG scenes (~120×80) for each visual type
+// Shown WITHOUT text — child identifies action by image
+const SPRITES = {
+  talk:`<svg viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg">
+    <rect width="120" height="80" rx="8" fill="#0E1428"/>
+    <!-- Figure 1 (you) -->
+    <circle cx="32" cy="22" r="11" fill="#6EC89A"/>
+    <rect x="26" y="33" width="12" height="20" rx="5" fill="#6EC89A"/>
+    <path d="M26,43 Q16,48 14,55" stroke="#6EC89A" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <path d="M38,43 Q46,50 42,55" stroke="#6EC89A" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <!-- Speech bubble -->
+    <ellipse cx="62" cy="20" rx="16" ry="11" fill="white" opacity=".95"/>
+    <polygon points="54,28 48,34 60,27" fill="white" opacity=".95"/>
+    <text x="62" y="24" text-anchor="middle" font-size="13">?</text>
+    <!-- Figure 2 (them) -->
+    <circle cx="92" cy="22" r="11" fill="#5B7FB5"/>
+    <rect x="86" y="33" width="12" height="20" rx="5" fill="#5B7FB5"/>
+    <path d="M86,43 Q76,50 74,55" stroke="#5B7FB5" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <path d="M98,43 Q106,48 106,55" stroke="#5B7FB5" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <line x1="8" y1="72" x2="112" y2="72" stroke="rgba(255,255,255,.15)" stroke-width="2"/>
+  </svg>`,
+
+  wait:`<svg viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg">
+    <rect width="120" height="80" rx="8" fill="#0E1428"/>
+    <!-- Figure (you, standing back) -->
+    <circle cx="28" cy="22" r="10" fill="#6EC89A"/>
+    <rect x="23" y="32" width="10" height="20" rx="4" fill="#6EC89A"/>
+    <path d="M23,40 Q14,46 12,53" stroke="#6EC89A" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <path d="M33,40 Q40,46 40,53" stroke="#6EC89A" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <!-- Space arrows -->
+    <text x="62" y="36" text-anchor="middle" font-size="22">↔️</text>
+    <!-- Figure 2 (them, far side) -->
+    <circle cx="96" cy="22" r="10" fill="#5B7FB5"/>
+    <rect x="91" y="32" width="10" height="20" rx="4" fill="#5B7FB5"/>
+    <!-- Figure 2 arms down (sad) -->
+    <path d="M91,40 Q82,46 80,54" stroke="#5B7FB5" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <path d="M101,40 Q108,46 108,54" stroke="#5B7FB5" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <line x1="8" y1="72" x2="112" y2="72" stroke="rgba(255,255,255,.15)" stroke-width="2"/>
+    <!-- Hourglass -->
+    <text x="60" y="68" text-anchor="middle" font-size="14">⏳</text>
+  </svg>`,
+
+  joke:`<svg viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg">
+    <rect width="120" height="80" rx="8" fill="#0E1428"/>
+    <!-- Figure 1 (you, arms up, excited) -->
+    <circle cx="32" cy="22" r="11" fill="#6EC89A"/>
+    <rect x="26" y="33" width="12" height="20" rx="5" fill="#6EC89A"/>
+    <path d="M26,38 Q14,26 12,18" stroke="#6EC89A" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <path d="M38,38 Q50,26 52,18" stroke="#6EC89A" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <!-- Star burst -->
+    <text x="65" y="28" text-anchor="middle" font-size="20">💥</text>
+    <text x="65" y="52" text-anchor="middle" font-size="18">😄</text>
+    <!-- Figure 2 -->
+    <circle cx="96" cy="22" r="11" fill="#5B7FB5"/>
+    <rect x="90" y="33" width="12" height="20" rx="5" fill="#5B7FB5"/>
+    <path d="M90,40 Q80,46 78,54" stroke="#5B7FB5" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <path d="M102,40 Q110,46 110,54" stroke="#5B7FB5" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <line x1="8" y1="72" x2="112" y2="72" stroke="rgba(255,255,255,.15)" stroke-width="2"/>
+  </svg>`,
+
+  ignore:`<svg viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg">
+    <rect width="120" height="80" rx="8" fill="#0E1428"/>
+    <!-- You, reading -->
+    <circle cx="32" cy="22" r="11" fill="#6EC89A"/>
+    <rect x="26" y="33" width="12" height="20" rx="5" fill="#6EC89A"/>
+    <path d="M26,40 Q20,44 14,46" stroke="#6EC89A" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <path d="M38,40 Q46,36 50,32" stroke="#6EC89A" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <!-- Book -->
+    <rect x="44" y="28" width="20" height="16" rx="3" fill="#FFD166"/>
+    <line x1="54" y1="28" x2="54" y2="44" stroke="#E8B800" stroke-width="1.5"/>
+    <!-- Them in background, small, faded -->
+    <circle cx="92" cy="26" r="9" fill="#5B7FB5" opacity=".4"/>
+    <rect x="87" y="35" width="10" height="16" rx="4" fill="#5B7FB5" opacity=".4"/>
+    <!-- X / ignore symbol -->
+    <text x="68" y="22" text-anchor="middle" font-size="14" opacity=".5">✕</text>
+    <line x1="8" y1="72" x2="112" y2="72" stroke="rgba(255,255,255,.15)" stroke-width="2"/>
+  </svg>`,
+
+  help:`<svg viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg">
+    <rect width="120" height="80" rx="8" fill="#0E1428"/>
+    <!-- You reaching out -->
+    <circle cx="28" cy="22" r="11" fill="#6EC89A"/>
+    <rect x="22" y="33" width="12" height="20" rx="5" fill="#6EC89A"/>
+    <path d="M22,38 Q14,44 12,50" stroke="#6EC89A" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <path d="M34,38 Q50,34 62,38" stroke="#6EC89A" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <!-- Hand -->
+    <circle cx="64" cy="40" r="6" fill="#FDCFC8"/>
+    <!-- Them -->
+    <circle cx="94" cy="22" r="11" fill="#5B7FB5"/>
+    <rect x="88" y="33" width="12" height="20" rx="5" fill="#5B7FB5"/>
+    <path d="M88,40 Q80,48 78,55" stroke="#5B7FB5" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <path d="M100,40 Q108,44 106,50" stroke="#5B7FB5" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <!-- Heart -->
+    <text x="60" y="68" text-anchor="middle" font-size="13">🤝</text>
+    <line x1="8" y1="72" x2="112" y2="72" stroke="rgba(255,255,255,.15)" stroke-width="2"/>
+  </svg>`,
+
+  wave:`<svg viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg">
+    <rect width="120" height="80" rx="8" fill="#0E1428"/>
+    <circle cx="32" cy="22" r="11" fill="#6EC89A"/>
+    <rect x="26" y="33" width="12" height="20" rx="5" fill="#6EC89A"/>
+    <path d="M26,38 Q16,44 14,52" stroke="#6EC89A" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <path d="M38,38 Q50,22 52,14" stroke="#6EC89A" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <text x="52" y="20" font-size="16">👋</text>
+    <!-- Dotted motion lines -->
+    <path d="M52,10 Q58,6 64,10" stroke="var(--mint)" stroke-width="1.5" fill="none" stroke-dasharray="3 2"/>
+    <circle cx="88" cy="24" r="10" fill="#5B7FB5"/>
+    <rect x="83" y="34" width="10" height="18" rx="4" fill="#5B7FB5"/>
+    <text x="60" y="65" text-anchor="middle" font-size="13">😊</text>
+    <line x1="8" y1="72" x2="112" y2="72" stroke="rgba(255,255,255,.15)" stroke-width="2"/>
+  </svg>`,
+
+  share:`<svg viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg">
+    <rect width="120" height="80" rx="8" fill="#0E1428"/>
+    <circle cx="28" cy="22" r="11" fill="#6EC89A"/>
+    <rect x="22" y="33" width="12" height="20" rx="5" fill="#6EC89A"/>
+    <path d="M22,38 Q14,44 12,52" stroke="#6EC89A" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <path d="M34,40 Q46,36 60,40" stroke="#6EC89A" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <!-- Shared object -->
+    <rect x="56" y="34" width="10" height="10" rx="3" fill="#FFD166"/>
+    <text x="60" y="67" text-anchor="middle" font-size="12">🎁</text>
+    <circle cx="92" cy="22" r="11" fill="#5B7FB5"/>
+    <rect x="86" y="33" width="12" height="20" rx="5" fill="#5B7FB5"/>
+    <path d="M86,40 Q76,46 74,54" stroke="#5B7FB5" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <path d="M98,40 Q106,44 108,52" stroke="#5B7FB5" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <line x1="8" y1="72" x2="112" y2="72" stroke="rgba(255,255,255,.15)" stroke-width="2"/>
+  </svg>`,
+
+  observe:`<svg viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg">
+    <rect width="120" height="80" rx="8" fill="#0E1428"/>
+    <circle cx="28" cy="22" r="11" fill="#6EC89A"/>
+    <rect x="22" y="33" width="12" height="20" rx="5" fill="#6EC89A"/>
+    <path d="M22,38 Q14,44 12,52" stroke="#6EC89A" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <path d="M34,38 Q42,34 48,36" stroke="#6EC89A" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <!-- Binoculars / eyes -->
+    <text x="60" y="36" text-anchor="middle" font-size="20">👀</text>
+    <!-- Dashed sight line -->
+    <path d="M50,30 L82,22" stroke="var(--blue)" stroke-width="1.5" fill="none" stroke-dasharray="3 2" opacity=".6"/>
+    <circle cx="90" cy="22" r="10" fill="#5B7FB5"/>
+    <rect x="85" y="32" width="10" height="18" rx="4" fill="#5B7FB5"/>
+    <line x1="8" y1="72" x2="112" y2="72" stroke="rgba(255,255,255,.15)" stroke-width="2"/>
+  </svg>`,
+};
+
+/* ═══════════════ CHARACTER SVG GENERATOR ══════════════════════ */
+function charSVG(sigs=[],age='child'){
+  const isDown    = sigs.some(s=>['looking_down','no_eye_contact','crying'].includes(s));
+  const isCross   = sigs.some(s=>['crossed_arms','tense_posture','turning_away'].includes(s));
+  const isExcited = sigs.some(s=>['loud_voice','laughing','waving','smiling','leaning_in','fast_speech'].includes(s));
+  const isSad     = sigs.some(s=>['crying','frowning','quiet','slow_speech'].includes(s));
+  const isRelax   = sigs.some(s=>['relaxed_posture','eye_contact','smiling'].includes(s));
+  const body=age==='adult'?'#5B7FB5':'#6EC89A';
+  const skin='#FDCFC8', hair=age==='adult'?'#3A2A1E':'#7B3F00';
+  const hRot=isDown?22:isExcited?-14:0;
+  let aL,aR;
+  if(isCross){
+    aL=`<path d="M54,87 Q46,100 62,107 Q73,111 77,105" stroke="${body}" stroke-width="8" fill="none" stroke-linecap="round"/>`;
+    aR=`<path d="M66,87 Q74,100 58,107 Q47,111 43,105" stroke="${body}" stroke-width="8" fill="none" stroke-linecap="round"/>`;
+  } else if(isExcited){
+    aL=`<path d="M54,87 Q34,68 28,52" stroke="${body}" stroke-width="8" fill="none" stroke-linecap="round"/>`;
+    aR=`<path d="M66,87 Q86,68 92,52" stroke="${body}" stroke-width="8" fill="none" stroke-linecap="round"/>`;
+  } else if(isSad){
+    aL=`<path d="M54,87 Q42,108 40,118" stroke="${body}" stroke-width="8" fill="none" stroke-linecap="round"/>`;
+    aR=`<path d="M66,87 Q78,108 80,118" stroke="${body}" stroke-width="8" fill="none" stroke-linecap="round"/>`;
+  } else {
+    aL=`<path d="M54,87 Q40,103 36,116" stroke="${body}" stroke-width="8" fill="none" stroke-linecap="round"/>`;
+    aR=`<path d="M66,87 Q80,103 84,116" stroke="${body}" stroke-width="8" fill="none" stroke-linecap="round"/>`;
+  }
+  const mouth=isSad
+    ?`<path d="M51,60 Q60,54 69,60" stroke="#555" stroke-width="2.5" fill="none" stroke-linecap="round"/>`
+    :(isExcited||isRelax)
+    ?`<path d="M51,57 Q60,65 69,57" stroke="#555" stroke-width="2.5" fill="none" stroke-linecap="round"/>`
+    :`<path d="M52,58 Q60,63 68,58" stroke="#555" stroke-width="2.5" fill="none" stroke-linecap="round"/>`;
+  const eL=isDown
+    ?`<ellipse cx="53" cy="49" rx="3.5" ry="1.5" fill="#555"/>`
+    :`<circle cx="53" cy="47" r="3.5" fill="#555"/><circle cx="54" cy="46" r="1.2" fill="white"/>`;
+  const eR=isDown
+    ?`<ellipse cx="67" cy="49" rx="3.5" ry="1.5" fill="#555"/>`
+    :`<circle cx="67" cy="47" r="3.5" fill="#555"/><circle cx="68" cy="46" r="1.2" fill="white"/>`;
+  const tears=sigs.includes('crying')
+    ?`<path d="M52,54 Q51,61 52,67" stroke="#87CEEB" stroke-width="2.2" fill="none"/>
+      <path d="M67,54 Q68,61 67,67" stroke="#87CEEB" stroke-width="2.2" fill="none"/>`:''
+  const wave=sigs.includes('waving')?`<text x="84" y="52" font-size="17">👋</text>`:''
+  return `<svg viewBox="0 0 120 160" xmlns="http://www.w3.org/2000/svg" class="char-svg">
+    <ellipse cx="60" cy="154" rx="27" ry="5" fill="rgba(0,0,0,.22)"/>
+    <rect x="44" y="78" width="32" height="52" rx="9" fill="${body}"/>
+    <rect x="46" y="125" width="11" height="28" rx="5" fill="${body}"/>
+    <rect x="63" y="125" width="11" height="28" rx="5" fill="${body}"/>
+    <ellipse cx="52" cy="154" rx="9" ry="4" fill="#222"/>
+    <ellipse cx="68" cy="154" rx="9" ry="4" fill="#222"/>
+    ${aL}${aR}
+    <rect x="54" y="70" width="12" height="12" rx="4" fill="${skin}"/>
+    <g transform="rotate(${hRot},60,48)">
+      <circle cx="60" cy="48" r="23" fill="${skin}"/>
+      <ellipse cx="60" cy="30" rx="23" ry="10" fill="${hair}"/>
+      ${eL}${eR}${mouth}${tears}
+    </g>
+    ${wave}
+  </svg>`;
+}
+
+/* ═══════════════════════ RENDER SCENE ══════════════════════════ */
+function renderScene(sc){
+  const sigs=sc.signals||[];
+  const bubs=sigs.slice(0,4).map((s,i)=>{
+    const info=SIGMAP[s]||{em:'❓',lbl:s};
+    // Positions around character
+    const pos=[
+      {top:'10%',left:'5%'},{top:'10%',right:'5%'},
+      {bottom:'18%',left:'2%'},{bottom:'18%',right:'2%'}
+    ][i]||{top:'10%',left:'5%'};
+    const styleStr=Object.entries(pos).map(([k,v])=>`${k}:${v}`).join(';');
+    return `<div class="sig-bub" title="${info.lbl}" style="${styleStr};animation-delay:${0.3+i*.15}s">${info.em}</div>`;
+  }).join('');
+
+  document.getElementById('scene-wrap').innerHTML=`
+    <div class="scene-bg ${sc.scene||'classroom'}"></div>
+    <div class="scene-body">
+      <div class="scan-line"></div>
+      <div class="char-wrap">
+        ${charSVG(sigs,sc.character_age)}
+        <div class="sig-bubbles">${bubs}</div>
+      </div>
+    </div>
+    <div class="scene-bar">
+      <div class="scene-loc">${SCENES[sc.scene]||'🏫'}</div>
+      <div class="scene-char">${CHARS[sc.character]||'👤'}</div>
+      <div class="scene-count">${sigs.map(()=>`<div class="sig-dot"></div>`).join('')}</div>
+    </div>`;
+}
+
+/* ═════════════════════ RENDER EMOTION GRID ════════════════════ */
+function renderEmoGrid(opts){
+  return opts.map(o=>`
+    <div class="emo-card" id="ec-${o.emotion}" onclick="pickEmo('${o.emotion}')">
+      <span class="emo-face">${o.emoji||EMOEM[o.emotion]||'😐'}</span>
+      <span class="emo-lbl">${o.emotion.toUpperCase()}</span>
+      <div class="emo-bar-wrap" id="eb-${o.emotion}">
+        <div class="emo-bar-fill" id="ef-${o.emotion}" style="width:0%"></div>
+      </div>
+      <div class="emo-pct" id="ep-${o.emotion}">${o.probability}%</div>
+    </div>`).join('');
+}
+
+/* ═════════════════════ RENDER RESPONSE GRID ═══════════════════ */
+function renderResGrid(opts){
+  return opts.map(o=>`
+    <div class="res-card" id="rc-${o.id}" onclick="pickRes('${o.id}')">
+      <div class="res-scene">${SPRITES[o.visual]||SPRITES.talk}</div>
+      <span class="res-lbl">${o.action}</span>
+      <div class="res-bar-wrap" id="rb-${o.id}">
+        <div class="res-bar-fill" id="rf-${o.id}" style="width:0%"></div>
+      </div>
+      <div class="res-pct" id="rp-${o.id}">${o.score}%</div>
+    </div>`).join('');
+}
+
+/* ═══════════════════════ SCORE RINGS ═══════════════════════════ */
+function makeRing(id,color,label,pct){
+  const off = Math.round(251*(1-pct/100));
+  return `<div class="ring-wrap">
+    <div class="ring-container">
+      <svg class="ring-svg" width="80" height="80" viewBox="0 0 80 80">
+        <circle class="ring-bg" cx="40" cy="40" r="34"/>
+        <circle class="ring-fill" id="${id}-ring" cx="40" cy="40" r="34"
+          stroke="${color}" style="stroke-dashoffset:251"/>
+      </svg>
+      <div class="ring-num" style="color:${color}" id="${id}-num">0%</div>
+    </div>
+    <div class="ring-label">${label}</div>
+  </div>`;
+}
+function animRing(id,pct,color){
+  const off=Math.round(251*(1-pct/100));
+  setTimeout(()=>{
+    const r=document.getElementById(id+'-ring');
+    if(r) r.style.strokeDashoffset=off;
+    animNum(id+'-num',pct,'%');
+  },200);
+}
+
+/* ═══════════════════════ PATTERN FLOW ══════════════════════════ */
+function patternFlow(sc,ev){
+  const sigs=sc.signals||[];
+  const trueEmo=sc.true_emotion;
+  const sigHTML=sigs.map((s,i)=>{
+    const info=SIGMAP[s]||{em:'❓'};
+    return `${i>0?'<span class="pf-plus">+</span>':''}<span class="pf-sig">${info.em}</span>`;
+  }).join('');
+  const emoEm=EMOEM[trueEmo]||'😐';
+  return `${sigHTML}<span class="pf-arrow">→</span><span class="pf-result">${emoEm}</span>`;
+}
+
+/* ════════════════════════ GAME FLOW ════════════════════════════ */
+function setDiff(d,btn){
+  S.diff=d;
+  document.querySelectorAll('.diff').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+}
+
+async function newScenario(){
+  document.getElementById('sim-load').style.display='flex';
+  S.phase='idle'; S.selEmo=null; S.selRes=null;
+  document.getElementById('step-emo').style.display='none';
+  document.getElementById('step-res').style.display='none';
+  document.getElementById('result').classList.remove('on');
+  try{
+    const r=await fetch('/api/generate-scenario',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({difficulty:S.diff})
+    });
+    S.sc=await r.json();
+    renderScene(S.sc);
+    document.getElementById('emo-grid').innerHTML=renderEmoGrid(S.sc.emotion_options);
+    document.getElementById('res-grid').innerHTML=renderResGrid(S.sc.response_options);
+    document.getElementById('step-emo').style.display='block';
+    S.phase='emotion';
+  }catch(e){
+    document.getElementById('scene-wrap').innerHTML=
+      `<div style="padding:40px;text-align:center;color:var(--coral)">⚠️ Check ANTHROPIC_API_KEY</div>`;
+    console.error(e);
+  }finally{
+    document.getElementById('sim-load').style.display='none';
+  }
+}
+
+function pickEmo(emo){
+  if(S.phase!=='emotion')return;
+  S.selEmo=emo;
+  document.querySelectorAll('.emo-card').forEach(c=>c.classList.remove('selected'));
+  document.getElementById(`ec-${emo}`).classList.add('selected');
+  setTimeout(()=>{
+    S.sc.emotion_options.forEach(o=>{
+      const card=document.getElementById(`ec-${o.emotion}`);
+      card.classList.add('revealed');
+      const bar=document.getElementById(`eb-${o.emotion}`);
+      const pct=document.getElementById(`ep-${o.emotion}`);
+      if(bar) bar.style.display='block';
+      if(pct) pct.style.display='block';
+      setTimeout(()=>{
+        const fill=document.getElementById(`ef-${o.emotion}`);
+        if(fill) fill.style.width=o.probability+'%';
+      },80);
+      if(o.emotion===S.sc.true_emotion) card.classList.add('correct');
+    });
+    setTimeout(()=>{
+      document.getElementById('step-res').style.display='block';
+      S.phase='response';
+      document.getElementById('step-res').scrollIntoView({behavior:'smooth'});
+    },1200);
+  },280);
+}
+
+async function pickRes(id){
+  if(S.phase!=='response')return;
+  S.selRes=id;
+  document.querySelectorAll('.res-card').forEach(c=>c.classList.remove('selected'));
+  document.getElementById(`rc-${id}`).classList.add('selected');
+  S.sc.response_options.forEach(o=>{
+    const card=document.getElementById(`rc-${o.id}`);
+    card.classList.add('revealed');
+    const bar=document.getElementById(`rb-${o.id}`);
+    const pct=document.getElementById(`rp-${o.id}`);
+    if(bar) bar.style.display='block';
+    if(pct) pct.style.display='block';
+    setTimeout(()=>{
+      const fill=document.getElementById(`rf-${o.id}`);
+      if(fill) fill.style.width=o.score+'%';
+    },80);
+    if(o.id===S.sc.best_response_id) card.classList.add('best');
+  });
+  S.phase='evaluating';
+  setTimeout(async()=>{
+    try{
+      const r=await fetch('/api/evaluate',{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({scenario:S.sc,chosen_emotion:S.selEmo,chosen_response_id:id})
+      });
+      const ev=await r.json();
+      S.stats.total++;
+      S.stats.emoScore+=ev.emotion_score;
+      S.stats.resScore+=ev.response_score;
+      if(ev.combined_score>=70) S.stats.streak++;
+      else S.stats.streak=0;
+      const te=S.sc.true_emotion;
+      if(!S.stats.emoBreak[te]) S.stats.emoBreak[te]={a:0,c:0};
+      S.stats.emoBreak[te].a++;
+      if(S.selEmo===te) S.stats.emoBreak[te].c++;
+      addToLib(S.sc,ev);
+      save(); refreshUI();
+      showResult(ev);
+    }catch(e){console.error(e)}
+  },700);
+}
+
+function showResult(ev){
+  const panel=document.getElementById('result');
+  // Achievement
+  document.getElementById('achieve-display').innerHTML=
+    `<div class="achieve">⭐ ${ev.achievement||'Pattern Spotter'}</div>`;
+  // Rings
+  const ringColors={emo:'#00D4FF',res:'#FF6B6B',tot:'#FFD166'};
+  document.getElementById('ring-row').innerHTML=
+    makeRing('r-emo',ringColors.emo,'👀',ev.emotion_score)+
+    makeRing('r-tot',ringColors.tot,'⭐',ev.combined_score)+
+    makeRing('r-res',ringColors.res,'💬',ev.response_score);
+  animRing('r-emo',ev.emotion_score,ringColors.emo);
+  animRing('r-tot',ev.combined_score,ringColors.tot);
+  animRing('r-res',ev.response_score,ringColors.res);
+  // Pattern flow
+  document.getElementById('pf-display').innerHTML=patternFlow(S.sc,ev);
+  // Explanation text
+  document.getElementById('explain-text').textContent=ev.explanation||'';
+  if(ev.combined_score>=85) spawnConf(panel);
+  panel.classList.add('on');
+  S.phase='result';
+  panel.scrollIntoView({behavior:'smooth'});
+}
+
+/* ═══════════════════════ PATTERN LIBRARY ══════════════════════ */
+function addToLib(sc,ev){
+  const pat={
+    id:sc.id||'scn_'+Date.now(), scene:sc.scene, character:sc.character,
+    signals:sc.signals, true_emotion:sc.true_emotion,
+    emo_em:EMOEM[sc.true_emotion]||'😐',
+    accuracy:ev.emotion_score, ts:new Date().toISOString()
+  };
+  const i=S.pats.findIndex(p=>JSON.stringify(p.signals)===JSON.stringify(sc.signals)&&p.scene===sc.scene);
+  if(i>=0) S.pats[i].accuracy=Math.round((S.pats[i].accuracy+ev.emotion_score)/2);
+  else S.pats.unshift(pat);
+  renderLib();
+}
+function renderLib(){
+  const g=document.getElementById('lib-grid');
+  document.getElementById('lib-count').textContent=S.pats.length;
+  if(!S.pats.length){g.innerHTML=`<div class="empty"><div class="empty-icon">📖</div></div>`;return}
+  g.innerHTML=S.pats.map(p=>{
+    const acc=Math.round(p.accuracy);
+    const col=acc>=80?'var(--mint)':acc>=60?'var(--gold)':'var(--coral)';
+    return `<div class="pat">
+      <div class="pat-head">
+        ${SCENES[p.scene]||'🏫'}
+        ${CHARS[p.character]||'👤'}
+      </div>
+      <div class="pat-sigs">${(p.signals||[]).map(s=>`<div class="pat-sig">${(SIGMAP[s]||{em:'?'}).em}</div>`).join('')}</div>
+      <div class="pat-foot">
+        <div style="font-size:1.8rem">${p.emo_em}</div>
+        <div class="pat-acc" style="color:${col}">${acc}%</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ═══════════════════════ DECODER ═══════════════════════════════ */
+function initSigGrid(){
+  document.getElementById('sig-grid').innerHTML=SIGS.map(s=>
+    `<div class="sig-chip" id="sc-${s.id}" title="${s.lbl}" onclick="togSig('${s.id}')">${s.em}</div>`
+  ).join('');
+}
+function togSig(id){
+  const c=document.getElementById(`sc-${id}`);
+  const i=S.decSigs.indexOf(id);
+  if(i>=0){S.decSigs.splice(i,1);c.classList.remove('on')}
+  else{S.decSigs.push(id);c.classList.add('on')}
+}
+function setCtx(el){
+  document.querySelectorAll('.ctx-btn').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+  S.decCtx=el.dataset.ctx;
+}
+async function runDecode(){
+  if(!S.decSigs.length){return}
+  document.getElementById('dec-empty').style.display='none';
+  document.getElementById('dec-out').style.display='none';
+  document.getElementById('dec-spin').style.display='block';
+  try{
+    const r=await fetch('/api/decode',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({signals:S.decSigs,context:S.decCtx})
+    });
+    S.lastDec=await r.json();
+    renderDecode(S.lastDec);
+  }catch(e){console.error(e)}
+  finally{document.getElementById('dec-spin').style.display='none'}
+}
+function renderDecode(d){
+  document.getElementById('dec-probs').innerHTML=d.emotion_probabilities.map(ep=>`
+    <div class="prob-item">
+      <div class="prob-face">${ep.emoji||EMOEM[ep.emotion]||'😐'}</div>
+      <div style="flex:1">
+        <div class="prob-track"><div class="prob-fill" style="width:${ep.probability}%"></div></div>
+      </div>
+      <div class="prob-pct">${ep.probability}%</div>
+    </div>`).join('');
+  document.getElementById('dec-acts').innerHTML=d.recommended_actions.map(a=>`
+    <div class="act-item">
+      <div style="font-size:1.4rem">${a.icon||'💬'}</div>
+      <div style="flex:1;font-size:.82rem;font-weight:700">${a.action}</div>
+      <div style="font-family:'Fredoka';color:var(--gold)">${a.score}%</div>
+    </div>`).join('');
+  document.getElementById('dec-out').style.display='block';
+}
+function saveDecToLib(){
+  if(!S.lastDec)return;
+  const top=S.lastDec.emotion_probabilities[0];
+  S.pats.unshift({
+    id:'dec_'+Date.now(),scene:S.decCtx,character:'observed',
+    signals:[...S.decSigs],true_emotion:top.emotion,
+    emo_em:top.emoji||EMOEM[top.emotion]||'😐',
+    accuracy:top.probability,ts:new Date().toISOString()
+  });
+  save();renderLib();
+  const b=document.getElementById('save-btn');
+  b.textContent='✓ 📚';
+  setTimeout(()=>{b.textContent='+ 📚'},2000);
+}
+
+/* ═══════════════════════ DASHBOARD ════════════════════════════ */
+function updateDash(){
+  const st=S.stats;
+  const avg=st.total>0?Math.round((st.emoScore+st.resScore)/(2*st.total)):0;
+  document.getElementById('d-acc').textContent=avg+'%';
+  document.getElementById('d-str').textContent=st.streak;
+  document.getElementById('d-tot').textContent=st.total;
+  document.getElementById('d-mst').textContent=S.pats.filter(p=>(p.accuracy||0)>=90).length;
+  document.getElementById('h-acc').textContent=avg>0?avg+'%':'--%';
+  document.getElementById('h-pat').textContent=S.pats.length;
+  document.getElementById('h-str').textContent=st.streak;
+  const eb=document.getElementById('emo-break');
+  const entries=Object.entries(st.emoBreak);
+  if(!entries.length){eb.innerHTML=`<div style="color:var(--dim);font-size:.83rem">🎮 Complete scenarios first</div>`;return}
+  eb.innerHTML=entries.map(([emo,d])=>{
+    const pct=d.a>0?Math.round(d.c/d.a*100):0;
+    return `<div class="emo-row">
+      <div class="ero-face">${EMOEM[emo]||'😐'}</div>
+      <div class="ero-bar"><div class="ero-fill" style="width:${pct}%"></div></div>
+      <div class="ero-pct">${pct}%</div>
+    </div>`;
+  }).join('');
+}
+
+/* ═══════════════════════ UTILS ════════════════════════════════ */
+function animNum(id,target,sfx=''){
+  const el=document.getElementById(id);if(!el)return;
+  let cur=0;const iv=setInterval(()=>{
+    cur=Math.min(cur+target/22,target);el.textContent=Math.round(cur)+sfx;
+    if(cur>=target)clearInterval(iv);
+  },36);
+}
+function spawnConf(container){
+  const cols=['#00D4FF','#FF6B6B','#4ECDC4','#FFD166','#C77DFF'];
+  for(let i=0;i<15;i++){
+    const p=document.createElement('div');p.className='conf';
+    p.style.cssText=`left:${Math.random()*100}%;top:${Math.random()*40}%;background:${cols[Math.floor(Math.random()*cols.length)]};animation-delay:${Math.random()*.5}s;position:absolute;`;
+    container.style.position='relative';container.appendChild(p);
+    setTimeout(()=>p.remove(),1600);
+  }
+}
+function goTab(id,btn){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'));
+  document.getElementById('panel-'+id).classList.add('on');
+  btn.classList.add('on');
+  if(id==='dash')updateDash();
+  if(id==='lib')renderLib();
+}
+function refreshUI(){updateDash();renderLib()}
+
+/* ═══════════════════════ INIT ══════════════════════════════════ */
+document.addEventListener('DOMContentLoaded',()=>{initSigGrid();load();refreshUI()});
+</script>
+</body>
+</html>
